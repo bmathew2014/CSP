@@ -3,10 +3,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javafx.util.Pair;
-public class Queens {
-    private final CSP solver = new CSP();
-    private final int numberOfQueens;
 
+public class Queens {
+    private CSP solver = new CSP();
+    private  int numberOfQueens;
+    public Queens(){}
+    public Queens(CSP solver , int numberOfQueens){
+        this.solver = solver;
+        this.numberOfQueens = numberOfQueens;
+    }
     @SuppressWarnings({ "restriction", "boxing" })
     public Queens(int queens) {
         numberOfQueens = queens;
@@ -19,7 +24,7 @@ public class Queens {
         // Create constraints
         for (int i = 1; i <= numberOfQueens; ++i) {
             for (int j = 1; j <= numberOfQueens; ++j) {
-                if(i==j) // added to make constraints format consistent with Sudoku and CircuitBoard
+                if(i==j)
                     continue;
                 Set<Pair<Integer, Integer>> constraint = new HashSet<>();
                 for (int a = 1; a <= numberOfQueens; ++a) {

@@ -12,7 +12,7 @@ class CSP {
 
     private int nodesExplored;
     private int constraintsChecked;
-    private Map<Integer,Set<Integer>> D;
+    private final Map<Integer,Set<Integer>> D;
     private final Map<Integer,Map<Integer, Set<Pair<Integer, Integer>>>> C;
     private final Set<Pair<Integer,Integer>> arc;
     private final Map<Integer,Set<Integer>> graph;
@@ -21,7 +21,7 @@ class CSP {
         resetStats();
         D = new HashMap<>();
         C = new HashMap<>();
-        arc = new HashSet<Pair<Integer, Integer>>();
+        arc = new HashSet<>();
         graph = new HashMap<>();
     }
     /**
@@ -40,7 +40,7 @@ class CSP {
 
         double duration = (System.currentTimeMillis() - before) / 1000.0;
         printStats();
-        System.out.println(String.format("Search time is %.2f second", duration));
+        System.out.printf("Search time is %.2f second%n", duration);
         return solution;
     }
 
@@ -55,14 +55,6 @@ class CSP {
 
     private void incrementConstraintCheck() {
         ++constraintsChecked;
-    }
-
-    public int getNodeCount() {
-        return nodesExplored;
-    }
-
-    public int getConstraintCheck() {
-        return constraintsChecked;
     }
 
     protected void printStats() {
@@ -111,10 +103,8 @@ class CSP {
      */
     private boolean enforceConsistency() {
 
-        Queue<Pair<Integer,Integer>> q = new LinkedList<>();
-
         // add all arcs to the queue
-        q.addAll(arc);
+        Queue<Pair<Integer, Integer>> q = new LinkedList<>(arc);
 
         return AC3(q,false,null);
     }
@@ -155,13 +145,13 @@ class CSP {
      * @param id2       identifier of second variable
      * @param infer     boolean flag to determine if inference is used
      * @param removed   true if revision is made, false otherwise
-     * @return
+     * @return Boolean
      */
     private boolean revise(Integer id1,
                            Integer id2,
                            boolean infer, Map<Integer,Set<Integer>> removed) {
         boolean revised = false;
-        Set<Integer> toremove = new HashSet<>();
+        Set<Integer> deleteSet = new HashSet<>();
         for(int x: D.get(id1)){
             boolean flag = true;
             for(int y : D.get(id2)){
@@ -174,19 +164,19 @@ class CSP {
                 }
             }
             if(flag){ // no value y allow (x,y) to satisfy the constraint
-                toremove.add(x);
+                deleteSet.add(x);
                 revised = true;
             }
         }
         // remove all entries
-        for (int i : toremove) {
+        for (int i : deleteSet) {
             D.get(id1).remove(i);
         }
         if(infer && revised){
             if(!removed.containsKey(id1)) {
-                removed.put(id1, toremove);
+                removed.put(id1, deleteSet);
             }else {
-                removed.get(id1).addAll(toremove);
+                removed.get(id1).addAll(deleteSet);
             }
         }
         return revised;
@@ -317,9 +307,10 @@ class CSP {
      * Pick the least constraining value (min-conflicts)
      * @param var              the variable to be assigned
      * @param partialSolution  the partial solution
-     * @return an order of values in var's domain
+     * @return an order of values in variable's domain
      */
-    private Iterable<Integer> orderDomainValues(Integer var, Map<Integer, Integer> partialSolution) {
+    private Iterable<Integer> orderDomainValues(Integer var,
+                                                Map<Integer, Integer> partialSolution) {
 
         if(!LCV) { // return the unordered domain if LCV heuristic is not used
             return new HashSet<>(D.get(var));
@@ -347,8 +338,8 @@ class CSP {
         Arrays.sort(result, Comparator.comparing((Integer[] arr) -> arr[1]));
         List<Integer> res = new ArrayList<>();
 
-        for(int i=0; i<result.length; i++){
-            res.add(result[i][0]);
+        for (Integer[] integers : result) {
+            res.add(integers[0]);
         }
 
         return res;
@@ -361,18 +352,18 @@ class CSP {
      * @return one unassigned variable
      */
     private Integer selectUnassignedVariable(Map<Integer, Integer> partialSolution) {
-        int minnum, minsize;
-        minnum = minsize = Integer.MAX_VALUE;
+        int minNum, minSize;
+        minNum = minSize = Integer.MAX_VALUE;
         for(int i: D.keySet()){
             if(!partialSolution.containsKey(i)){
                 if(!MRV) // return the first non-conflict value if MRV heuristic is not used
                     return i;
-                if(D.get(i).size() < minsize){
-                    minnum = i;
-                    minsize = D.get(i).size();
+                if(D.get(i).size() < minSize){
+                    minNum = i;
+                    minSize = D.get(i).size();
                 }
             }
         }
-        return minnum;
+        return minNum;
     }
 }
